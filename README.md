@@ -20,9 +20,50 @@ swift test --package-path Packages/MouseControlKit
 
 ## First run
 
-1. Quit and uninstall Logi Options+; it diverts the same controls.
+1. Quit and uninstall Logi Options+; it diverts the same controls. See [Uninstalling Logi Options+](#uninstalling-logi-options).
 2. Grant **Input Monitoring** (opens the mouse's HID++ channel) and **Accessibility** (event tap and key posting). The menu links to both panes. macOS may require a relaunch after granting Input Monitoring; the menu offers it.
 3. The app registers itself as a login item on first launch.
+
+## Uninstalling Logi Options+
+
+Logi Options+ has no bundled uninstaller, and moving `logioptionsplus.app` to the Trash leaves its background agent and updater running. Remove it completely before using MouseControl.
+
+1. Quit Logi Options+, then unload and stop its background services:
+
+   ```bash
+   sudo launchctl bootout system /Library/LaunchDaemons/com.logi.optionsplus.updater.plist
+   launchctl bootout gui/$(id -u) /Library/LaunchAgents/com.logi.optionsplus.plist
+   killall logioptionsplus_agent logioptionsplus_updater LogiPluginService 2>/dev/null
+   ```
+
+2. Delete the app and its system-wide files:
+
+   ```bash
+   sudo rm -rf /Applications/logioptionsplus.app \
+     /Applications/Utilities/LogiPluginService.app \
+     "/Applications/Utilities/Logi Options+ Driver Installer.bundle" \
+     "/Library/Application Support/Logitech.localized/LogiOptionsPlus" \
+     "/Library/Application Support/Logi" \
+     /Library/LaunchAgents/com.logi.optionsplus.plist \
+     /Library/LaunchDaemons/com.logi.optionsplus.updater.plist
+   ```
+
+3. Optionally, delete your user settings:
+
+   ```bash
+   rm -rf ~/Library/Application\ Support/LogiOptionsPlus \
+     ~/Library/Application\ Support/Logi \
+     ~/Library/Preferences/com.logi.optionsplus*.plist \
+     ~/Library/Preferences/com.logi.pluginservice.plist
+   ```
+
+4. If the older **Logitech Options** is also installed, run `/Applications/Utilities/LogiMgr Uninstaller.app`. It diverts the same controls.
+
+5. In **System Settings → Privacy & Security**, remove any remaining Logi entries from **Input Monitoring**, **Accessibility**, and **Bluetooth**. In **General → Login Items & Extensions**, remove any remaining Logi items.
+
+6. Restart the Mac so no process still holds the mouse's HID++ channel.
+
+Paths can vary between Options+ versions; any entry that doesn't exist can be skipped. Other Logitech software, such as webcam utilities, can stay installed.
 
 ## Debugging
 
