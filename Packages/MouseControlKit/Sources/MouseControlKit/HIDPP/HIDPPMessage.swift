@@ -12,6 +12,8 @@ public enum HIDPP {
 
     /// Device index used for a device connected directly over Bluetooth.
     public static let bluetoothDeviceIndex: UInt8 = 0xFF
+    /// Device indexes a receiver assigns to its paired devices.
+    public static let receiverSlots: ClosedRange<UInt8> = 1...6
     /// Feature index used by HID++ 2.0 error responses.
     public static let errorFeatureIndex: UInt8 = 0xFF
     /// Sub ID used by HID++ 1.0 error responses (receivers).

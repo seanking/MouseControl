@@ -17,6 +17,16 @@ public enum SupportedDevices {
     public static let bleHIDPPUsagePage = 0xFF43
     public static let bleHIDPPUsage = 0x0202
 
+    /// HID++ collection on Logitech USB receivers (short and long reports).
+    public static let receiverHIDPPUsagePage = 0xFF00
+    public static let receiverHIDPPUsage = 0x0002
+    /// Logi Bolt receiver.
+    public static let receiverProductIDs: Set<Int> = [0xC548]
+
+    public static func isReceiver(vendorID: Int, productID: Int) -> Bool {
+        vendorID == logitechVendorID && receiverProductIDs.contains(productID)
+    }
+
     public static let mxMaster3S = DeviceProfile(
         name: "MX Master 3S",
         bluetoothProductIDs: [0xB034],
@@ -30,7 +40,12 @@ public enum SupportedDevices {
         if let match = all.first(where: { $0.bluetoothProductIDs.contains(productID) }) { return match }
         // Unknown PID variant (e.g. a business SKU) that still names itself.
         guard let productName else { return nil }
-        return all.first { productName.localizedCaseInsensitiveContains($0.name) }
+        return profile(named: productName)
+    }
+
+    /// Matches by the name a device reports, e.g. via Device Name (0x0005) behind a receiver.
+    public static func profile(named name: String) -> DeviceProfile? {
+        all.first { name.localizedCaseInsensitiveContains($0.name) }
     }
 
     /// Picks the gesture button from the device's control list.

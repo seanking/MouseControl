@@ -203,3 +203,25 @@ import Testing
         #expect(SupportedDevices.profile(vendorID: 0x05AC, productID: 0xB034, productName: nil) == nil)
     }
 }
+
+@Suite struct DeviceNameTests {
+    @Test func readsNameAcrossChunks() async throws {
+        let name = Array("MX Master 3S".utf8)
+        let device = FixtureDevice { call in
+            if call.function == 0 { return [UInt8(name.count)] }
+            // Hand out 8 characters per call to exercise chunking.
+            let start = Int(call.params[0])
+            return Array(name[start..<min(start + 8, name.count)])
+        }
+        let feature = DeviceNameFeature(index: 0x03, channel: device)
+        #expect(try await feature.name() == "MX Master 3S")
+        #expect(device.calls.map(\.params.first) == [nil, 0, 8])
+    }
+
+    @Test func matchesReceiverDevicesByName() {
+        #expect(SupportedDevices.profile(named: "MX Master 3S") == SupportedDevices.mxMaster3S)
+        #expect(SupportedDevices.profile(named: "MX Keys S") == nil)
+        #expect(SupportedDevices.isReceiver(vendorID: 0x046D, productID: 0xC548))
+        #expect(!SupportedDevices.isReceiver(vendorID: 0x046D, productID: 0xB034))
+    }
+}

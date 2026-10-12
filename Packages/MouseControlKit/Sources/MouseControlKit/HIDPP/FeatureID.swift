@@ -7,6 +7,7 @@ public struct FeatureID: RawRepresentable, Hashable, Sendable, CustomStringConve
 
     public static let root = FeatureID(rawValue: 0x0000)
     public static let featureSet = FeatureID(rawValue: 0x0001)
+    public static let deviceName = FeatureID(rawValue: 0x0005)
     public static let unifiedBattery = FeatureID(rawValue: 0x1004)
     public static let reprogControlsV4 = FeatureID(rawValue: 0x1B04)
     public static let wirelessDeviceStatus = FeatureID(rawValue: 0x1D4B)

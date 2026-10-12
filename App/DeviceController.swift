@@ -33,10 +33,11 @@ final class DeviceController {
     private(set) var lastError: String?
 
     @ObservationIgnored private let logger = Logger(subsystem: Log.subsystem, category: "controller")
-    @ObservationIgnored private let transport = HIDTransport.logitechBluetooth()
+    @ObservationIgnored private let transport = HIDTransport.logitech()
     @ObservationIgnored private let eventTap = EventTapService()
     @ObservationIgnored private let batteryNotifier = BatteryNotifier()
     @ObservationIgnored private var session: Session?
+    @ObservationIgnored private var receiver: Receiver?
     @ObservationIgnored private var configureTask: Task<Void, Never>?
     @ObservationIgnored private var observers: [any NSObjectProtocol] = []
     @ObservationIgnored private var started = false
@@ -62,12 +63,21 @@ final class DeviceController {
         transport.onMatched = { [weak self] connection in
             // Transport queue: wire up input before any report can be missed, then hop to the main actor.
             let info = connection.info
-            guard let profile = SupportedDevices.profile(vendorID: info.vendorID, productID: info.productID, productName: info.product) else {
-                return
+            if let profile = SupportedDevices.profile(vendorID: info.vendorID, productID: info.productID, productName: info.product) {
+                let channel = HIDPPChannel(deviceIndex: HIDPP.bluetoothDeviceIndex) { try connection.send($0) }
+                transport.setInputHandler({ channel.receive($0) }, for: connection)
+                Task { @MainActor in self?.deviceMatched(info: info, profile: profile, channel: channel) }
+            } else if SupportedDevices.isReceiver(vendorID: info.vendorID, productID: info.productID) {
+                // One channel per pairing slot; reports are routed by their device index byte.
+                let channels = Dictionary(uniqueKeysWithValues: HIDPP.receiverSlots.map { slot in
+                    (slot, HIDPPChannel(deviceIndex: slot) { try connection.send($0) })
+                })
+                transport.setInputHandler({ bytes in
+                    guard bytes.count > 1 else { return }
+                    channels[bytes[1]]?.receive(bytes)
+                }, for: connection)
+                Task { @MainActor in self?.receiverMatched(info: info, channels: channels) }
             }
-            let channel = HIDPPChannel(deviceIndex: HIDPP.bluetoothDeviceIndex) { try connection.send($0) }
-            transport.setInputHandler({ channel.receive($0) }, for: connection)
-            Task { @MainActor in self?.deviceMatched(info: info, profile: profile, channel: channel) }
         }
         transport.onRemoved = { [weak self] info in
             Task { @MainActor in self?.deviceRemoved(info) }
@@ -133,21 +143,85 @@ final class DeviceController {
 
     // MARK: - Device events
 
-    private func deviceMatched(info: HIDDeviceInfo, profile: DeviceProfile, channel: HIDPPChannel) {
+    /// `viaReceiver`: the channel belongs to `receiver`, which also owns its notification stream.
+    private func deviceMatched(info: HIDDeviceInfo, profile: DeviceProfile, channel: HIDPPChannel, viaReceiver: Bool = false) {
         session?.close()
-        let session = Session(info: info, profile: profile, channel: channel)
+        let session = Session(info: info, profile: profile, channel: channel, ownsChannel: !viaReceiver)
         self.session = session
         deviceName = profile.name
         connection = .connected
-        session.listener = Task { [weak self] in
-            for await message in channel.notifications {
-                self?.handleNotification(message, session: session)
+        if !viaReceiver {
+            session.listener = Task { [weak self] in
+                for await message in channel.notifications {
+                    self?.handleNotification(message, session: session)
+                }
             }
         }
         scheduleConfigure(after: Self.configureDebounce)
     }
 
+    private func receiverMatched(info: HIDDeviceInfo, channels: [UInt8: HIDPPChannel]) {
+        receiver?.close()
+        let receiver = Receiver(info: info, channels: channels)
+        self.receiver = receiver
+        // An AsyncStream has a single consumer, so each slot gets one listener for its whole
+        // lifetime that routes to the session or, while no mouse is found, triggers a probe.
+        receiver.listeners = channels.map { slot, channel in
+            Task { [weak self] in
+                for await message in channel.notifications {
+                    self?.receiverNotification(message, slot: slot, receiver: receiver)
+                }
+            }
+        }
+        Task { await probe(receiver, slots: Set(channels.keys)) }
+    }
+
+    private func receiverNotification(_ message: HIDPPMessage, slot: UInt8, receiver: Receiver) {
+        guard self.receiver === receiver, let channel = receiver.channels[slot] else { return }
+        if let session {
+            if session.channel === channel { handleNotification(message, session: session) }
+        } else {
+            // A device on this slot just woke up or paired; it may be the mouse.
+            Task { await probe(receiver, slots: [slot]) }
+        }
+    }
+
+    /// Looks for a supported device behind the receiver. Slots requested while a probe is
+    /// running are picked up by that probe.
+    private func probe(_ receiver: Receiver, slots: Set<UInt8>) async {
+        receiver.pendingSlots.formUnion(slots)
+        guard !receiver.probing else { return }
+        receiver.probing = true
+        defer { receiver.probing = false }
+        while let slot = receiver.pendingSlots.min() {
+            receiver.pendingSlots.remove(slot)
+            guard let channel = receiver.channels[slot], let profile = await identify(channel) else { continue }
+            guard self.receiver === receiver, session == nil else { return }
+            logger.info("Found \(profile.name, privacy: .public) on receiver slot \(slot)")
+            receiver.pendingSlots.removeAll()
+            deviceMatched(info: receiver.info, profile: profile, channel: channel, viaReceiver: true)
+        }
+    }
+
+    /// Identifies the device on a receiver slot by name. Empty slots and sleeping devices fail fast
+    /// with a HID++ 1.0 error from the receiver.
+    private func identify(_ channel: HIDPPChannel) async -> DeviceProfile? {
+        do {
+            let root = RootFeature(channel: channel)
+            _ = try await root.ping()
+            guard let feature = try await root.feature(.deviceName) else { return nil }
+            let name = try await DeviceNameFeature(index: feature.index, channel: channel).name()
+            return SupportedDevices.profile(named: name)
+        } catch {
+            return nil
+        }
+    }
+
     private func deviceRemoved(_ info: HIDDeviceInfo) {
+        if let receiver, receiver.info.registryID == info.registryID {
+            receiver.close()
+            self.receiver = nil
+        }
         guard let session, session.info.registryID == info.registryID else { return }
         session.close()
         self.session = nil
@@ -411,22 +485,47 @@ private final class Session {
     let info: HIDDeviceInfo
     let profile: DeviceProfile
     let channel: HIDPPChannel
+    /// False when the channel is one of a receiver's slots; the receiver closes it.
+    let ownsChannel: Bool
     var features: Features?
     var gestureCID: UInt16?
     var gesturePressed = false
     var listener: Task<Void, Never>?
     var batteryPoll: Task<Void, Never>?
 
-    init(info: HIDDeviceInfo, profile: DeviceProfile, channel: HIDPPChannel) {
+    init(info: HIDDeviceInfo, profile: DeviceProfile, channel: HIDPPChannel, ownsChannel: Bool) {
         self.info = info
         self.profile = profile
         self.channel = channel
+        self.ownsChannel = ownsChannel
     }
 
     func close() {
         listener?.cancel()
         batteryPoll?.cancel()
-        channel.close()
+        if ownsChannel { channel.close() }
+    }
+}
+
+// MARK: - Receiver
+
+/// A USB receiver and one HID++ channel per pairing slot. Lives as long as the receiver is plugged in.
+@MainActor
+private final class Receiver {
+    let info: HIDDeviceInfo
+    let channels: [UInt8: HIDPPChannel]
+    var listeners: [Task<Void, Never>] = []
+    var pendingSlots: Set<UInt8> = []
+    var probing = false
+
+    init(info: HIDDeviceInfo, channels: [UInt8: HIDPPChannel]) {
+        self.info = info
+        self.channels = channels
+    }
+
+    func close() {
+        listeners.forEach { $0.cancel() }
+        channels.values.forEach { $0.close() }
     }
 }
 

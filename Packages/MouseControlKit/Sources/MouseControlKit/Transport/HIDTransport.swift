@@ -66,13 +66,20 @@ public final class HIDTransport: @unchecked Sendable {
         self.matching = matching
     }
 
-    /// Matches Logitech BLE HID++ collections.
-    public static func logitechBluetooth() -> HIDTransport {
-        HIDTransport(matching: [[
-            kIOHIDVendorIDKey: SupportedDevices.logitechVendorID,
-            kIOHIDDeviceUsagePageKey: SupportedDevices.bleHIDPPUsagePage,
-            kIOHIDDeviceUsageKey: SupportedDevices.bleHIDPPUsage,
-        ]])
+    /// Matches Logitech HID++ collections: devices paired directly over Bluetooth, and USB receivers.
+    public static func logitech() -> HIDTransport {
+        HIDTransport(matching: [
+            [
+                kIOHIDVendorIDKey: SupportedDevices.logitechVendorID,
+                kIOHIDDeviceUsagePageKey: SupportedDevices.bleHIDPPUsagePage,
+                kIOHIDDeviceUsageKey: SupportedDevices.bleHIDPPUsage,
+            ],
+            [
+                kIOHIDVendorIDKey: SupportedDevices.logitechVendorID,
+                kIOHIDDeviceUsagePageKey: SupportedDevices.receiverHIDPPUsagePage,
+                kIOHIDDeviceUsageKey: SupportedDevices.receiverHIDPPUsage,
+            ],
+        ])
     }
 
     /// Opens the manager. Returns `.notPermitted` when Input Monitoring hasn't been granted.
