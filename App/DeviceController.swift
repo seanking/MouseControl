@@ -58,6 +58,9 @@ final class DeviceController {
 
         Permission.inputMonitoring.requestIfUndetermined()
         if settings.backForwardEnabled { Permission.accessibility.requestIfUndetermined() }
+        // The warning is on by default, so ask now rather than only when the setting changes.
+        // macOS shows the prompt only while authorization is undetermined.
+        if settings.lowBatteryThreshold > 0 { batteryNotifier.requestAuthorization() }
 
         let transport = self.transport
         transport.onMatched = { [weak self] connection in
