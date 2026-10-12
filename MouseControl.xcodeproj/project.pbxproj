@@ -16,6 +16,7 @@
 		C0F855394B24DDB19D8A53C2 /* MouseControlApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83F8BEB808ED89E5AF0D7AC /* MouseControlApp.swift */; };
 		DF100FD0495AE6AC19409983 /* BatteryNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 169BF40ED0280BFC187580AC /* BatteryNotifier.swift */; };
 		F4A5940773EC4CF2E3342FE3 /* SystemActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41497D61F896C200AB5136CF /* SystemActions.swift */; };
+		A1C0FFEE0000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE0000000000000001 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		CA92A6CA72CC3837243400BD /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		D2706C501F6DA7528694BFC7 /* EventTapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTapService.swift; sourceTree = "<group>"; };
 		D83F8BEB808ED89E5AF0D7AC /* MouseControlApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseControlApp.swift; sourceTree = "<group>"; };
+		A1C0FFEE0000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,6 +50,7 @@
 		05E88417C8B1B9035120938A /* App */ = {
 			isa = PBXGroup;
 			children = (
+				A1C0FFEE0000000000000001 /* Assets.xcassets */,
 				169BF40ED0280BFC187580AC /* BatteryNotifier.swift */,
 				6D2B488FBB8CF5CF4CD70C90 /* DeviceController.swift */,
 				D2706C501F6DA7528694BFC7 /* EventTapService.swift */,
@@ -96,6 +99,7 @@
 			buildPhases = (
 				9FE749221E842E4B716FCDF2 /* Sources */,
 				BB63515A06DDA51923DDD7EF /* Frameworks */,
+				A1C0FFEE0000000000000003 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -144,6 +148,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1C0FFEE0000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1C0FFEE0000000000000002 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9FE749221E842E4B716FCDF2 /* Sources */ = {
