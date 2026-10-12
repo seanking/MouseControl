@@ -163,10 +163,11 @@ struct MenuContentView: View {
                     .foregroundStyle(.secondary)
             }
             let dpis = controller.supportedDPIs
+            // Snap by rounding rather than `step:`, which on macOS draws a tick per step;
+            // with ~150 DPI values those merge into a second line under the track.
             Slider(
-                value: $dpiIndex,
+                value: Binding(get: { dpiIndex }, set: { dpiIndex = $0.rounded() }),
                 in: 0...Double(max(dpis.count - 1, 1)),
-                step: 1,
                 onEditingChanged: { editing in
                     draggingDPI = editing
                     // Apply once on release instead of on every step of the drag.
