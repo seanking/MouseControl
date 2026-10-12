@@ -61,9 +61,7 @@ final class EventTapService: @unchecked Sendable {
             place: .headInsertEventTap,
             options: .defaultTap,
             eventsOfInterest: mask,
-            callback: { _, type, event, info in
-                Unmanaged<EventTapService>.fromOpaque(info!).takeUnretainedValue().handle(type: type, event: event)
-            },
+            callback: Self.tapCallback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {
             Self.logger.error("CGEvent.tapCreate failed (Accessibility not granted?)")
@@ -114,6 +112,12 @@ final class EventTapService: @unchecked Sendable {
     }
 
     // MARK: - Tap thread
+
+    /// Defined outside `install` so it isn't inferred `@MainActor`: the tap invokes it on the tap
+    /// thread, where Swift 6's runtime isolation check would otherwise trap.
+    private static let tapCallback: CGEventTapCallBack = { _, type, event, info in
+        Unmanaged<EventTapService>.fromOpaque(info!).takeUnretainedValue().handle(type: type, event: event)
+    }
 
     private func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         switch type {
