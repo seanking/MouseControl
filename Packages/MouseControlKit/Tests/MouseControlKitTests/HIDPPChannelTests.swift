@@ -106,6 +106,16 @@ import Testing
         }
     }
 
+    @Test func requestAfterCloseFailsWithoutSending() async {
+        let sent = Mutex(0)
+        let channel = HIDPPChannel { _ in sent.withLock { $0 += 1 } }
+        channel.close()
+        await #expect(throws: HIDPPError.disconnected) {
+            _ = try await channel.request(featureIndex: 0, function: 0)
+        }
+        #expect(sent.withLock { $0 } == 0)
+    }
+
     @Test func sendFailurePropagates() async {
         let channel = HIDPPChannel { _ in throw HIDPPError.sendFailed(-536_870_212) }
         await #expect(throws: HIDPPError.sendFailed(-536_870_212)) {

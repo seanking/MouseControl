@@ -50,4 +50,36 @@ import Testing
         #expect(m.u16(at: 1) == 1600)
         #expect(m.u16(at: 2) == 0)
     }
+
+    @Test func serializesShortReportAtShortLength() {
+        let m = HIDPPMessage(reportID: HIDPP.shortReportID, deviceIndex: 0x01, featureIndex: 0x81, functionByte: 0x02, params: [0x05])
+        #expect(m.bytes == Fixture.bytes("10 01 81 02 05 00 00"))
+        #expect(m.bytes.count == HIDPP.shortReportLength)
+    }
+
+    @Test func describesAsHex() {
+        let m = HIDPPMessage(reportID: HIDPP.shortReportID, deviceIndex: 0xFF, featureIndex: 0x0A, functionByte: 0x1F, params: [0xAB])
+        #expect(m.description == "10 FF 0A 1F AB 00 00")
+    }
+}
+
+@Suite struct HIDPPErrorTests {
+    @Test(arguments: [
+        (HIDPPError.device(code: 7), "HID++ error invalidFunctionID (7)"),
+        (.device(code: 0x42), "HID++ error 66"),
+        (.hidpp10(code: 9), "HID++ 1.0 error 9"),
+        (.timeout, "Device did not respond"),
+        (.sendFailed(-536_870_212), "Report send failed (0xE00002BC)"),
+        (.featureNotSupported(.thumbwheel), "Feature 0x2150 not supported"),
+        (.malformedResponse, "Malformed response"),
+        (.disconnected, "Device disconnected"),
+    ])
+    func describesErrors(error: HIDPPError, description: String) {
+        #expect(error.description == description)
+    }
+
+    @Test func formatsFeatureIDAsHex() {
+        #expect(FeatureID.reprogControlsV4.description == "0x1B04")
+        #expect(FeatureID.root.description == "0x0000")
+    }
 }

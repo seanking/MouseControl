@@ -24,6 +24,17 @@ import Testing
         let version = try await RootFeature(channel: device).ping()
         #expect(version == .init(major: 4, minor: 5))
     }
+
+    @Test func pingRejectsMismatchedEcho() async {
+        let device = FixtureDevice { _ in [4, 5, 0x00] }
+        await #expect(throws: HIDPPError.malformedResponse) {
+            _ = try await RootFeature(channel: device).ping(data: 0x5A)
+        }
+    }
+
+    @Test func rejectsShortGetFeaturePayload() {
+        #expect(RootFeature.parseGetFeature([0x0A, 0x00], for: .hiResWheel) == nil)
+    }
 }
 
 @Suite struct BatteryFeatureTests {
@@ -38,11 +49,21 @@ import Testing
         #expect(BatteryFeature.parseStatus([100, 0x08, 3, 1])?.charging == .full)
         #expect(BatteryFeature.parseStatus([50, 0x04, 4, 1])?.charging == .error)
         #expect(BatteryFeature.parseStatus([50, 0x04, 1, 1])?.charging.isCharging == true)
+        #expect(BatteryFeature.parseStatus([50, 0x04, 2, 1])?.charging.isCharging == true)
+        #expect(BatteryFeature.parseStatus([50, 0x04, 0, 0])?.charging.isCharging == false)
+        #expect(BatteryFeature.parseStatus([100, 0x08, 3, 1])?.charging.isCharging == false)
     }
 
     @Test func approximatesWithoutStateOfCharge() {
         #expect(BatteryFeature.parseStatus([0, 0x02, 0, 0])?.percentage == 20)
         #expect(BatteryFeature.parseStatus([0, 0x01, 0, 0])?.level == .critical)
+        #expect(BatteryFeature.parseStatus([0, 0x01, 0, 0])?.percentage == 5)
+        #expect(BatteryFeature.parseStatus([0, 0x08, 0, 0])?.percentage == 90)
+        #expect(BatteryFeature.parseStatus([0, 0x04, 0, 0])?.percentage == 50)
+        #expect(BatteryFeature.parseStatus([0, 0x00, 0, 0])?.percentage == 0)
+        #expect(BatteryFeature.parseStatus([0, 0x00, 0, 0])?.level == .unknown)
+        // Out-of-range state of charge is treated as unreported.
+        #expect(BatteryFeature.parseStatus([200, 0x04, 0, 0])?.percentage == 50)
     }
 
     @Test func rejectsShortPayload() {
@@ -103,6 +124,18 @@ import Testing
         try await ThumbwheelFeature(index: 0x0D, channel: device).setInverted(true)
         #expect(device.calls == [.init(featureIndex: 0x0D, function: 2, params: [0, 1])])
     }
+
+    @Test func readsStatusWithFunction1() async throws {
+        let device = FixtureDevice { _ in [0x01, 0x01] }
+        let status = try await ThumbwheelFeature(index: 0x0D, channel: device).status()
+        #expect(status == .init(diverted: true, inverted: true))
+        #expect(device.calls == [.init(featureIndex: 0x0D, function: 1, params: [])])
+    }
+
+    @Test func reportingParams() {
+        #expect(ThumbwheelFeature.reportingParams(diverted: true, inverted: false) == [1, 0])
+        #expect(ThumbwheelFeature.reportingParams(diverted: false, inverted: false) == [0, 0])
+    }
 }
 
 @Suite struct AdjustableDPITests {
@@ -146,6 +179,20 @@ import Testing
         #expect(AdjustableDPIFeature.snap(9000, to: supported) == 1000)
         #expect(AdjustableDPIFeature.snap(100, to: []) == nil)
     }
+
+    @Test func readsSupportedDPIsForSensor() async throws {
+        let device = FixtureDevice { _ in [0x00, 0x01, 0x90, 0x03, 0x20, 0x00, 0x00] }
+        let list = try await AdjustableDPIFeature(index: 0x0C, channel: device).supportedDPIs()
+        #expect(list == [400, 800])
+        #expect(device.calls == [.init(featureIndex: 0x0C, function: 1, params: [0x00])])
+    }
+
+    @Test func emptyDPIListIsMalformed() async {
+        let device = FixtureDevice { _ in [0x00, 0x00, 0x00] }
+        await #expect(throws: HIDPPError.malformedResponse) {
+            _ = try await AdjustableDPIFeature(index: 0x0C, channel: device).supportedDPIs()
+        }
+    }
 }
 
 @Suite struct ReprogControlsTests {
@@ -161,6 +208,8 @@ import Testing
         #expect(c.flags == 0x0130)
         #expect(c.isDivertable)
         #expect(!ReprogControlsFeature.parseControl(Self.leftInfo).isDivertable)
+        #expect(c.isReprogrammable)
+        #expect(!ReprogControlsFeature.parseControl(Self.leftInfo).isReprogrammable)
     }
 
     @Test func enumeratesControlsAndFindsGestureButton() async throws {
@@ -182,6 +231,12 @@ import Testing
         #expect(ReprogControlsFeature.reportingParams(cid: 0x00C3, diverted: false) == [0x00, 0xC3, 0x02, 0x00, 0x00])
     }
 
+    @Test func setDivertedUsesFunction3() async throws {
+        let device = FixtureDevice { $0.params }
+        try await ReprogControlsFeature(index: 0x09, channel: device).setDiverted(true, cid: 0x00C3)
+        #expect(device.calls == [.init(featureIndex: 0x09, function: 3, params: [0x00, 0xC3, 0x03, 0x00, 0x00])])
+    }
+
     @Test func parsesDivertedButtonEvents() {
         #expect(ReprogControlsFeature.pressedControls(inEvent: [0x00, 0xC3] + Array(repeating: 0, count: 14)) == [0x00C3])
         #expect(ReprogControlsFeature.pressedControls(inEvent: Array(repeating: 0, count: 16)).isEmpty)
@@ -201,6 +256,7 @@ import Testing
         #expect(SupportedDevices.profile(vendorID: 0x046D, productID: 0xB999, productName: "MX Master 3S B") == SupportedDevices.mxMaster3S)
         #expect(SupportedDevices.profile(vendorID: 0x046D, productID: 0xB023, productName: "MX Master 3") == nil)
         #expect(SupportedDevices.profile(vendorID: 0x05AC, productID: 0xB034, productName: nil) == nil)
+        #expect(SupportedDevices.profile(vendorID: 0x046D, productID: 0xB999, productName: nil) == nil)
     }
 }
 
@@ -216,6 +272,18 @@ import Testing
         let feature = DeviceNameFeature(index: 0x03, channel: device)
         #expect(try await feature.name() == "MX Master 3S")
         #expect(device.calls.map(\.params.first) == [nil, 0, 8])
+    }
+
+    @Test func stopsWhenDeviceEndsNameEarly() async throws {
+        let device = FixtureDevice { call in
+            switch (call.function, call.params.first) {
+            case (0, _): [12]               // claims 12 characters…
+            case (1, 0): Array("MX".utf8)  // …but only sends two
+            default: []                    // then zero padding
+            }
+        }
+        #expect(try await DeviceNameFeature(index: 0x03, channel: device).name() == "MX")
+        #expect(device.calls.count == 3)
     }
 
     @Test func matchesReceiverDevicesByName() {
