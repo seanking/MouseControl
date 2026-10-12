@@ -11,7 +11,6 @@ BUILD=build/release
 PROFILE="${NOTARY_PROFILE:-MouseControlNotary}"
 
 rm -rf "$BUILD"
-xcodegen generate
 xcodebuild -project MouseControl.xcodeproj -scheme MouseControl -configuration Release \
   -archivePath "$BUILD/MouseControl.xcarchive" archive
 xcodebuild -exportArchive -archivePath "$BUILD/MouseControl.xcarchive" \
