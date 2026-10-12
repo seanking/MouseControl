@@ -16,21 +16,12 @@ public struct HIDDeviceInfo: Sendable, Hashable {
 public final class HIDConnection: @unchecked Sendable {
     public let info: HIDDeviceInfo
     fileprivate let device: IOHIDDevice
-    fileprivate let reportBuffer: UnsafeMutablePointer<UInt8>
-    fileprivate let reportBufferSize: Int
     // Only touched on the transport queue.
     fileprivate var inputHandler: (@Sendable ([UInt8]) -> Void)?
 
     fileprivate init(device: IOHIDDevice, info: HIDDeviceInfo) {
         self.device = device
         self.info = info
-        let maxInput = (IOHIDDeviceGetProperty(device, kIOHIDMaxInputReportSizeKey as CFString) as? Int) ?? 0
-        reportBufferSize = max(64, maxInput)
-        reportBuffer = .allocate(capacity: reportBufferSize)
-    }
-
-    deinit {
-        reportBuffer.deallocate()
     }
 
     /// Sends an output report. `bytes[0]` must be the report ID.
@@ -68,7 +59,8 @@ public final class HIDTransport: @unchecked Sendable {
     private let queue = DispatchQueue(label: "MouseControl.hid", qos: .userInitiated)
     private let matching: [[String: Int]]
     private var manager: IOHIDManager?
-    private var connections: [UInt64: HIDConnection] = [:]
+    /// Keyed by the IOHIDDevice pointer, which is what the input report callback identifies a sender by.
+    private var connections: [UnsafeMutableRawPointer: HIDConnection] = [:]
 
     public init(matching: [[String: Int]]) {
         self.matching = matching
@@ -96,6 +88,13 @@ public final class HIDTransport: @unchecked Sendable {
             }, context)
             IOHIDManagerRegisterDeviceRemovalCallback(manager, { context, _, _, device in
                 Unmanaged<HIDTransport>.fromOpaque(context!).takeUnretainedValue().deviceRemoved(device)
+            }, context)
+            // Registered on the manager, not per device: activation activates every matched device,
+            // and registering a callback on an already-activated device traps.
+            IOHIDManagerRegisterInputReportCallback(manager, { context, _, sender, _, reportID, report, length in
+                guard let sender else { return }
+                Unmanaged<HIDTransport>.fromOpaque(context!).takeUnretainedValue().connections[sender]?
+                    .deliver(reportID: reportID, report: report, length: length)
             }, context)
             IOHIDManagerSetDispatchQueue(manager, queue)
 
@@ -134,21 +133,12 @@ public final class HIDTransport: @unchecked Sendable {
         Log.transport.info("Matched \(info.product ?? "?", privacy: .public) pid=\(String(format: "0x%04X", info.productID), privacy: .public) via \(info.transport ?? "?", privacy: .public)")
 
         let connection = HIDConnection(device: device, info: info)
-        connections[info.registryID] = connection
-        let context = Unmanaged.passUnretained(connection).toOpaque()
-        IOHIDDeviceRegisterInputReportCallback(
-            device, connection.reportBuffer, connection.reportBufferSize,
-            { context, _, _, _, reportID, report, length in
-                Unmanaged<HIDConnection>.fromOpaque(context!).takeUnretainedValue()
-                    .deliver(reportID: reportID, report: report, length: length)
-            }, context
-        )
+        connections[Unmanaged.passUnretained(device).toOpaque()] = connection
         onMatched?(connection)
     }
 
     private func deviceRemoved(_ device: IOHIDDevice) {
-        let id = Self.registryID(of: device)
-        guard let connection = connections.removeValue(forKey: id) else { return }
+        guard let connection = connections.removeValue(forKey: Unmanaged.passUnretained(device).toOpaque()) else { return }
         connection.inputHandler = nil
         Log.transport.info("Removed \(connection.info.product ?? "?", privacy: .public)")
         onRemoved?(connection.info)
