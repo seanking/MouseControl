@@ -2,8 +2,9 @@
 # Archive, Developer ID sign, notarize and staple MouseControl.app.
 #
 # One-time setup:
-#   1. A "Developer ID Application" certificate for team MDMNS9Q8F5 in the login keychain.
-#   2. xcrun notarytool store-credentials MouseControlNotary --apple-id <id> --team-id MDMNS9Q8F5
+#   1. Config/Local.xcconfig with your DEVELOPMENT_TEAM (see Config/Local.xcconfig.example).
+#   2. A "Developer ID Application" certificate for that team in the login keychain.
+#   3. xcrun notarytool store-credentials MouseControlNotary --apple-id <id> --team-id <team-id>
 set -euo pipefail
 
 cd "$(dirname "$0")/.."

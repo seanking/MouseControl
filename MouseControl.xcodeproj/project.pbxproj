@@ -12,11 +12,11 @@
 		376366FB102CEDC92D24DC69 /* EventTapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2706C501F6DA7528694BFC7 /* EventTapService.swift */; };
 		901ACB98DB488FF7E64F8142 /* DeviceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B488FBB8CF5CF4CD70C90 /* DeviceController.swift */; };
 		9CF460A972A17179381C7110 /* MenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D216E94C36A3BC4E49C1841 /* MenuContentView.swift */; };
+		A1C0FFEE0000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE0000000000000001 /* Assets.xcassets */; };
 		B8C9ED5B200438EF06DBE82D /* MouseControlKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2179EA49C3C5E3BD03574E7 /* MouseControlKit */; };
 		C0F855394B24DDB19D8A53C2 /* MouseControlApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83F8BEB808ED89E5AF0D7AC /* MouseControlApp.swift */; };
 		DF100FD0495AE6AC19409983 /* BatteryNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 169BF40ED0280BFC187580AC /* BatteryNotifier.swift */; };
 		F4A5940773EC4CF2E3342FE3 /* SystemActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41497D61F896C200AB5136CF /* SystemActions.swift */; };
-		A1C0FFEE0000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE0000000000000001 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,13 +26,14 @@
 		41497D61F896C200AB5136CF /* SystemActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemActions.swift; sourceTree = "<group>"; };
 		6D2B488FBB8CF5CF4CD70C90 /* DeviceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceController.swift; sourceTree = "<group>"; };
 		818A430773B4ACAE65823B95 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A1C0FFEE0000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A47611387ABB69A125B33411 /* MouseControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MouseControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D1B9B49A999CE18E44B870 /* MouseControl.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MouseControl.entitlements; sourceTree = "<group>"; };
 		C64DDC69A5F5B0E0F41B7A12 /* Permissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Permissions.swift; sourceTree = "<group>"; };
 		CA92A6CA72CC3837243400BD /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		D2706C501F6DA7528694BFC7 /* EventTapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTapService.swift; sourceTree = "<group>"; };
 		D83F8BEB808ED89E5AF0D7AC /* MouseControlApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseControlApp.swift; sourceTree = "<group>"; };
-		A1C0FFEE0000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1C0FFEE0000000000000010 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,9 +70,18 @@
 			isa = PBXGroup;
 			children = (
 				05E88417C8B1B9035120938A /* App */,
+				A1C0FFEE0000000000000011 /* Config */,
 				EFDBEF6DEFAD7779B37C74B6 /* Packages */,
 				C1D2915EBB55FB5BC1E8D9DB /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		A1C0FFEE0000000000000011 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				A1C0FFEE0000000000000010 /* Signing.xcconfig */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 		C1D2915EBB55FB5BC1E8D9DB /* Products */ = {
@@ -121,11 +131,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-					C1916BE2BD36CEA797257A60 = {
-						DevelopmentTeam = MDMNS9Q8F5;
-					};
-				};
 			};
 			buildConfigurationList = D7DA60D4DFE78C36A602B4BC /* Build configuration list for PBXProject "MouseControl" */;
 			developmentRegion = en;
@@ -181,6 +186,7 @@
 /* Begin XCBuildConfiguration section */
 		87EB4DC09C8B2FD92C61B6FB /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1C0FFEE0000000000000010 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -216,7 +222,6 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = MDMNS9Q8F5;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -271,8 +276,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/MouseControl.entitlements;
-				CODE_SIGN_IDENTITY = "Developer ID Application";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
@@ -282,12 +287,14 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.seanking.MouseControl;
 				PRODUCT_NAME = MouseControl;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
 			name = Release;
 		};
 		C278B85BDB878A6059576014 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1C0FFEE0000000000000010 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -323,7 +330,6 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = MDMNS9Q8F5;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;

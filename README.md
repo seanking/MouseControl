@@ -9,9 +9,12 @@ A native macOS 27 menu-bar app that replaces the parts of Logi Options+ used wit
 | `App/` | SwiftUI `MenuBarExtra`, `DeviceController`, `EventTapService`, settings, permissions |
 | `Packages/MouseControlKit/` | HID++ 2.0 framing/matching (`HIDPPChannel`), features, `IOHIDManager` transport. No AppKit dependency, so it can be tested without hardware. |
 | `MouseControl.xcodeproj` | Xcode project (app target, scheme, signing) |
+| `Config/` | `Signing.xcconfig`, which includes the git-ignored `Local.xcconfig` that holds your team ID |
 | `Scripts/release.sh` | Archive → Developer ID sign → notarize → staple |
 
 ## Build & test
+
+To sign the app, copy `Config/Local.xcconfig.example` to `Config/Local.xcconfig` and set your `DEVELOPMENT_TEAM`. Git ignores that file, so your team ID stays out of the repo.
 
 ```bash
 xcodebuild -project MouseControl.xcodeproj -scheme MouseControl build

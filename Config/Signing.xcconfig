@@ -1,0 +1,9 @@
+// Code signing settings shared by all configurations.
+//
+// The development team is intentionally not checked in. To build signed,
+// copy Local.xcconfig.example to Local.xcconfig (git-ignored) and set your
+// team ID there.
+
+DEVELOPMENT_TEAM =
+
+#include? "Local.xcconfig"
