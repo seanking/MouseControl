@@ -1,6 +1,6 @@
 # Mouse Control
 
-A native macOS 27 menu-bar app that replaces the parts of Logi Options+ used with an MX Master 3S: mouse-only scroll direction, thumb-wheel direction, DPI, Back/Forward in Safari, thumb button → Mission Control, and battery.
+A native macOS 27 menu-bar app that replaces the parts of Logi Options+ used with an MX Master 3S: mouse-only scroll direction, thumb-wheel direction, DPI, Back/Forward in Safari, a configurable thumb button (Mission Control, App Exposé, Show Desktop, Spotlight, Notification Center, or drag to switch Spaces), and battery.
 
 ## Layout
 
@@ -82,6 +82,7 @@ The `hidpp` category logs every report in both directions at debug level. Use th
 - **Thumb wheel**: Thumbwheel `0x2150`, native reporting plus the invert flag.
 - **DPI**: Adjustable DPI `0x2201`. The list, including step ranges, is read from the device.
 - **Back/Forward**: event tap turns buttons 3/4 into ⌘[ / ⌘].
-- **Thumb button**: Reprog Controls v4 `0x1B04` diverts the gesture CID after confirming it is in the device's control list and divertable. A press opens Mission Control.app, with Ctrl+↑ as the fallback.
+- **Thumb button**: Reprog Controls v4 `0x1B04` diverts the gesture CID after confirming it is in the device's control list and divertable. A press runs the chosen action. Mission Control launches Mission Control.app, with Ctrl+↑ as the fallback. App Exposé (⌃↓), Show Desktop (F11) and Spotlight (⌘Space) post the default system shortcuts, so they only work while those shortcuts are enabled. Notification Center presses the menu bar clock through the Accessibility API. Choosing None leaves the button undiverted.
+- **Drag to switch Spaces**: the gesture button is also diverted with raw XY reporting, so while it's held the mouse sends pointer motion over HID++ instead of moving the cursor. Every ⅛ inch of horizontal drag (scaled by the current DPI) posts ⌃← or ⌃→. The click action then runs on release, and only if the button barely moved.
 - **Battery**: Unified Battery `0x1004`. Read on connect, polled every 5 minutes, and updated from device events.
 - **Reconnect**: every device match, wake from sleep, and Wireless Device Status `0x1D4B` "reconfigure" event triggers a debounced (300 ms) re-discovery and re-apply.

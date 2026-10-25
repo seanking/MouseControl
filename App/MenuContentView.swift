@@ -99,8 +99,9 @@ struct MenuContentView: View {
         if !controller.inputMonitoringGranted || controller.connection == .permissionRequired {
             permissionRow(.inputMonitoring, detail: "Needed to talk to the mouse.")
         }
-        if !controller.accessibilityGranted && (settings.backForwardEnabled || controller.scrollFallbackActive) {
-            permissionRow(.accessibility, detail: "Needed for Back/Forward and Mission Control.")
+        if !controller.accessibilityGranted
+            && (settings.backForwardEnabled || controller.scrollFallbackActive || settings.thumbButtonNeedsAccessibility) {
+            permissionRow(.accessibility, detail: "Needed for Back/Forward and the thumb button.")
         }
         if controller.needsRelaunch {
             HStack {
@@ -187,11 +188,22 @@ struct MenuContentView: View {
                 detail: "Sends ⌘[ and ⌘] (works in Safari)",
                 isOn: Binding(get: { settings.backForwardEnabled }, set: { controller.setBackForward($0) })
             )
+            dropdown("Thumb button", detail: thumbButtonDetail, selection: Binding(
+                get: { settings.thumbButtonAction },
+                set: { controller.setThumbButtonAction($0) }
+            )) {
+                ForEach(SettingsStore.ThumbButtonAction.allCases, id: \.self) { action in
+                    Text(action.title).tag(action)
+                }
+            }
             toggleRow(
-                "Thumb button → Mission Control",
-                detail: controller.gestureButtonAvailable == false ? "Not available on this device" : nil,
-                isOn: Binding(get: { settings.gestureMissionControl }, set: { controller.setGestureMissionControl($0) })
+                "Drag to switch Spaces",
+                detail: controller.gestureSwipeAvailable == false
+                    ? "Not available on this device"
+                    : "Hold the thumb button and drag left or right (sends ⌃← / ⌃→)",
+                isOn: Binding(get: { settings.thumbButtonSwipeSpaces }, set: { controller.setThumbButtonSwipeSpaces($0) })
             )
+            .disabled(controller.gestureSwipeAvailable == false)
         }
     }
 
@@ -254,10 +266,11 @@ struct MenuContentView: View {
     /// on the trailing edge regardless of its option text.
     private func dropdown<Value: Hashable>(
         _ title: String,
+        detail: String? = nil,
         selection: Binding<Value>,
         @ViewBuilder options: () -> some View
     ) -> some View {
-        row(title) {
+        row(title, detail: detail) {
             Picker(title, selection: selection, content: options)
                 .pickerStyle(.menu)
                 .labelsHidden()
@@ -268,6 +281,10 @@ struct MenuContentView: View {
         }
     }
 
+    private var thumbButtonDetail: String? {
+        if controller.gestureButtonAvailable == false { return "Not available on this device" }
+        return settings.thumbButtonAction.systemShortcut.map { "Sends \($0)" }
+    }
 
     private var dpiLabel: String {
         let dpis = controller.supportedDPIs

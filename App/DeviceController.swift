@@ -28,6 +28,8 @@ final class DeviceController {
     private(set) var needsRelaunch = false
     private(set) var scrollFallbackActive = false
     private(set) var gestureButtonAvailable: Bool?
+    /// The gesture button can report pointer motion while held, which swiping needs.
+    private(set) var gestureSwipeAvailable: Bool?
     private(set) var launchAtLogin = LoginItem.isEnabled
     private(set) var launchAtLoginNeedsApproval = LoginItem.needsApproval
     private(set) var lastError: String?
@@ -44,6 +46,8 @@ final class DeviceController {
 
     private static let batteryPollInterval: Duration = .seconds(300)
     private static let configureDebounce: Duration = .milliseconds(300)
+    /// Physical drag, in inches, that switches one Space.
+    private static let swipeDistance = 0.125
 
     // MARK: - Lifecycle
 
@@ -57,7 +61,9 @@ final class DeviceController {
         }
 
         Permission.inputMonitoring.requestIfUndetermined()
-        if settings.backForwardEnabled { Permission.accessibility.requestIfUndetermined() }
+        if settings.backForwardEnabled || settings.thumbButtonNeedsAccessibility {
+            Permission.accessibility.requestIfUndetermined()
+        }
         // The warning is on by default, so ask now rather than only when the setting changes.
         // macOS shows the prompt only while authorization is undetermined.
         if settings.lowBatteryThreshold > 0 { batteryNotifier.requestAuthorization() }
@@ -277,8 +283,10 @@ final class DeviceController {
             if let reprog = features.reprog {
                 let controls = try? await reprog.controls()
                 session.gestureCID = controls.flatMap { SupportedDevices.gestureButton(in: $0, profile: session.profile) }
+                session.gestureSupportsRawXY = controls?.first { $0.cid == session.gestureCID }?.supportsRawXY ?? false
             }
             gestureButtonAvailable = session.gestureCID != nil
+            gestureSwipeAvailable = session.gestureSupportsRawXY
             if let dpi = features.dpi {
                 supportedDPIs = (try? await dpi.supportedDPIs()) ?? []
             }
@@ -297,20 +305,25 @@ final class DeviceController {
     }
 
     private func handleNotification(_ message: HIDPPMessage, session: Session) {
-        guard self.session === session, let features = session.features, message.functionID == 0 else { return }
+        guard self.session === session, let features = session.features else { return }
         switch message.featureIndex {
-        case features.battery?.index:
+        case features.battery?.index where message.functionID == 0:
             if let status = BatteryFeature.parseStatus(message.params) { setBattery(status) }
 
-        case features.reprog?.index:
+        case features.reprog?.index where message.functionID == ReprogControlsFeature.divertedButtonsEvent:
             guard let cid = session.gestureCID else { return }
-            let pressed = ReprogControlsFeature.pressedControls(inEvent: message.params).contains(cid)
-            if pressed, !session.gesturePressed, settings.gestureMissionControl {
-                SystemActions.openMissionControl()
-            }
-            session.gesturePressed = pressed
+            gestureButtonChanged(pressed: ReprogControlsFeature.pressedControls(inEvent: message.params).contains(cid), session: session)
 
-        case features.wirelessStatusIndex:
+        case features.reprog?.index where message.functionID == ReprogControlsFeature.rawXYEvent:
+            guard var swipe = session.swipe, let motion = ReprogControlsFeature.rawXY(inEvent: message.params) else { return }
+            if let direction = swipe.add(dx: motion.dx, dy: motion.dy) {
+                // Natural, like a trackpad swipe: drag the current Space away, so dragging
+                // left brings in the Space on the right.
+                SystemActions.switchSpace(toNext: direction == .left)
+            }
+            session.swipe = swipe
+
+        case features.wirelessStatusIndex where message.functionID == 0:
             if WirelessDeviceStatus.needsReconfiguration(event: message.params) {
                 logger.info("Device requested reconfiguration")
                 scheduleConfigure(after: Self.configureDebounce)
@@ -318,6 +331,22 @@ final class DeviceController {
 
         default:
             break
+        }
+    }
+
+    /// With swiping on, the click action waits for release so a drag doesn't also trigger it.
+    private func gestureButtonChanged(pressed: Bool, session: Session) {
+        guard pressed != session.gesturePressed else { return }
+        session.gesturePressed = pressed
+        if session.rawXYDiverted {
+            if pressed {
+                session.swipe = SwipeTracker(threshold: SwipeTracker.threshold(inches: Self.swipeDistance, dpi: currentDPI))
+            } else {
+                if session.swipe?.isTap == true { SystemActions.perform(settings.thumbButtonAction) }
+                session.swipe = nil
+            }
+        } else if pressed {
+            SystemActions.perform(settings.thumbButtonAction)
         }
     }
 
@@ -380,7 +409,12 @@ final class DeviceController {
     private func applyGesture() async {
         guard let session, let reprog = session.features?.reprog, let cid = session.gestureCID else { return }
         do {
-            try await reprog.setDiverted(settings.gestureMissionControl, cid: cid)
+            // With nothing to do, leave the button to the device's default behavior.
+            let rawXY = settings.thumbButtonSwipeSpaces && session.gestureSupportsRawXY
+            let diverted = rawXY || settings.thumbButtonAction != .none
+            try await reprog.setDiverted(diverted, cid: cid, rawXY: rawXY)
+            session.rawXYDiverted = rawXY
+            session.swipe = nil
         } catch {
             logger.error("Gesture button divert failed: \(String(describing: error), privacy: .public)")
         }
@@ -446,8 +480,15 @@ final class DeviceController {
         updateEventTap()
     }
 
-    func setGestureMissionControl(_ enabled: Bool) {
-        settings.gestureMissionControl = enabled
+    func setThumbButtonAction(_ action: SettingsStore.ThumbButtonAction) {
+        settings.thumbButtonAction = action
+        if action.needsAccessibility { Permission.accessibility.requestIfUndetermined() }
+        Task { await applyGesture() }
+    }
+
+    func setThumbButtonSwipeSpaces(_ enabled: Bool) {
+        settings.thumbButtonSwipeSpaces = enabled
+        if enabled { Permission.accessibility.requestIfUndetermined() }
         Task { await applyGesture() }
     }
 
@@ -493,6 +534,11 @@ private final class Session {
     var features: Features?
     var gestureCID: UInt16?
     var gesturePressed = false
+    var gestureSupportsRawXY = false
+    /// Raw XY reporting is on, so presses are tracked as possible swipes.
+    var rawXYDiverted = false
+    /// Motion since the gesture button went down; nil while it's up.
+    var swipe: SwipeTracker?
     var listener: Task<Void, Never>?
     var batteryPoll: Task<Void, Never>?
 

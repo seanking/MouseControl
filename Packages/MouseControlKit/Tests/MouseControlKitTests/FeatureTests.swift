@@ -243,6 +243,24 @@ import Testing
         #expect(ReprogControlsFeature.pressedControls(inEvent: [0x00, 0xC3, 0x00, 0xC4, 0, 0, 0, 0]) == [0x00C3, 0x00C4])
     }
 
+    @Test func rawXYSupportFromAdditionalFlags() {
+        #expect(ReprogControlsFeature.parseControl(Self.gestureInfo).supportsRawXY)
+        #expect(!ReprogControlsFeature.parseControl(Self.leftInfo).supportsRawXY)
+    }
+
+    @Test func rawXYDivertParams() {
+        #expect(ReprogControlsFeature.reportingParams(cid: 0x00C3, diverted: true, rawXY: true) == [0x00, 0xC3, 0x33, 0x00, 0x00])
+        #expect(ReprogControlsFeature.reportingParams(cid: 0x00C3, diverted: true, rawXY: false) == [0x00, 0xC3, 0x23, 0x00, 0x00])
+        #expect(ReprogControlsFeature.reportingParams(cid: 0x00C3, diverted: false, rawXY: false) == [0x00, 0xC3, 0x22, 0x00, 0x00])
+    }
+
+    @Test func parsesRawXYEvents() throws {
+        let right = try #require(ReprogControlsFeature.rawXY(inEvent: [0x00, 0x0A, 0xFF, 0xFB] + Array(repeating: 0, count: 12)))
+        #expect(right.dx == 10)
+        #expect(right.dy == -5)
+        #expect(ReprogControlsFeature.rawXY(inEvent: [0x00, 0x0A]) == nil)
+    }
+
     @Test func wirelessStatusReconfiguration() {
         #expect(WirelessDeviceStatus.needsReconfiguration(event: [1, 1, 0]))
         #expect(WirelessDeviceStatus.needsReconfiguration(event: [0, 1, 0]))
@@ -291,5 +309,37 @@ import Testing
         #expect(SupportedDevices.profile(named: "MX Keys S") == nil)
         #expect(SupportedDevices.isReceiver(vendorID: 0x046D, productID: 0xC548))
         #expect(!SupportedDevices.isReceiver(vendorID: 0x046D, productID: 0xB034))
+    }
+}
+
+@Suite struct SwipeTrackerTests {
+    @Test func swipesOncePerThreshold() {
+        var tracker = SwipeTracker(threshold: 100)
+        #expect(tracker.add(dx: 60, dy: 5) == nil)
+        #expect(tracker.add(dx: 50, dy: 0) == .right)
+        #expect(tracker.add(dx: -40, dy: 0) == nil)
+        #expect(tracker.add(dx: -70, dy: 0) == .left)
+        #expect(tracker.swipeCount == 2)
+        #expect(!tracker.isTap)
+    }
+
+    @Test func ignoresMostlyVerticalMotion() {
+        var tracker = SwipeTracker(threshold: 100)
+        #expect(tracker.add(dx: 120, dy: 150) == nil)
+        #expect(!tracker.isTap)
+    }
+
+    @Test func smallMotionIsATap() {
+        var tracker = SwipeTracker(threshold: 100)
+        #expect(tracker.isTap)
+        _ = tracker.add(dx: 20, dy: -10)
+        #expect(tracker.isTap)
+        _ = tracker.add(dx: 30, dy: 0)
+        #expect(!tracker.isTap)
+    }
+
+    @Test func thresholdScalesWithDPI() {
+        #expect(SwipeTracker.threshold(inches: 0.25, dpi: 1600) == 400)
+        #expect(SwipeTracker.threshold(inches: 0.25, dpi: nil) == 250)
     }
 }

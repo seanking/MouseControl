@@ -8,12 +8,45 @@ final class SettingsStore {
         case natural, standard
     }
 
+    /// What a press of the thumb (gesture) button does. Raw values are persisted.
+    enum ThumbButtonAction: String, CaseIterable {
+        case none, missionControl, appExpose, showDesktop, spotlight, notificationCenter
+
+        var title: String {
+            switch self {
+            case .none: "None"
+            case .missionControl: "Mission Control"
+            case .appExpose: "App Exposé"
+            case .showDesktop: "Show Desktop"
+            case .spotlight: "Spotlight"
+            case .notificationCenter: "Notification Center"
+            }
+        }
+
+        /// The system shortcut the action sends, if any; it only works while enabled in System Settings.
+        var systemShortcut: String? {
+            switch self {
+            case .appExpose: "⌃↓"
+            case .showDesktop: "F11"
+            case .spotlight: "⌘Space"
+            case .none, .missionControl, .notificationCenter: nil
+            }
+        }
+
+        /// Posting keystrokes and pressing menu bar items both need Accessibility. Mission Control
+        /// launches an app, but its Ctrl+↑ fallback still posts a keystroke.
+        var needsAccessibility: Bool { self != .none }
+    }
+
     private enum Key {
         static let mouseScrollDirection = "mouseScrollDirection"
         static let thumbWheelInverted = "thumbWheelInverted"
         static let dpi = "dpi"
         static let backForwardEnabled = "backForwardEnabled"
+        /// Legacy on/off flag, read once to migrate into `thumbButtonAction`.
         static let gestureMissionControl = "gestureMissionControl"
+        static let thumbButtonAction = "thumbButtonAction"
+        static let thumbButtonSwipeSpaces = "thumbButtonSwipeSpaces"
         static let showBatteryInMenuBar = "showBatteryInMenuBar"
         /// Legacy on/off flag, read once to migrate into `lowBatteryThreshold`.
         static let lowBatteryWarning = "lowBatteryWarning"
@@ -36,8 +69,16 @@ final class SettingsStore {
     var backForwardEnabled: Bool {
         didSet { defaults.set(backForwardEnabled, forKey: Key.backForwardEnabled) }
     }
-    var gestureMissionControl: Bool {
-        didSet { defaults.set(gestureMissionControl, forKey: Key.gestureMissionControl) }
+    var thumbButtonAction: ThumbButtonAction {
+        didSet { defaults.set(thumbButtonAction.rawValue, forKey: Key.thumbButtonAction) }
+    }
+    /// Hold the thumb button and drag left/right to switch Spaces; a click still runs `thumbButtonAction`.
+    var thumbButtonSwipeSpaces: Bool {
+        didSet { defaults.set(thumbButtonSwipeSpaces, forKey: Key.thumbButtonSwipeSpaces) }
+    }
+    /// Swiping posts ⌃← / ⌃→ and every action except None posts events, so both need Accessibility.
+    var thumbButtonNeedsAccessibility: Bool {
+        thumbButtonSwipeSpaces || thumbButtonAction.needsAccessibility
     }
     var showBatteryInMenuBar: Bool {
         didSet { defaults.set(showBatteryInMenuBar, forKey: Key.showBatteryInMenuBar) }
@@ -58,6 +99,7 @@ final class SettingsStore {
             Key.thumbWheelInverted: false,
             Key.backForwardEnabled: true,
             Key.gestureMissionControl: true,
+            Key.thumbButtonSwipeSpaces: false,
             Key.showBatteryInMenuBar: false,
             Key.lowBatteryWarning: true,
             Key.didInitialLoginItemSetup: false,
@@ -66,7 +108,13 @@ final class SettingsStore {
         thumbWheelInverted = defaults.bool(forKey: Key.thumbWheelInverted)
         dpi = defaults.object(forKey: Key.dpi) as? Int
         backForwardEnabled = defaults.bool(forKey: Key.backForwardEnabled)
-        gestureMissionControl = defaults.bool(forKey: Key.gestureMissionControl)
+        if let action = defaults.string(forKey: Key.thumbButtonAction).flatMap(ThumbButtonAction.init(rawValue:)) {
+            thumbButtonAction = action
+        } else {
+            // Migrate the old on/off setting: on was Mission Control.
+            thumbButtonAction = defaults.bool(forKey: Key.gestureMissionControl) ? .missionControl : .none
+        }
+        thumbButtonSwipeSpaces = defaults.bool(forKey: Key.thumbButtonSwipeSpaces)
         showBatteryInMenuBar = defaults.bool(forKey: Key.showBatteryInMenuBar)
         if let threshold = defaults.object(forKey: Key.lowBatteryThreshold) as? Int {
             lowBatteryThreshold = threshold
