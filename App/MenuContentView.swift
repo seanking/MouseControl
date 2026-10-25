@@ -219,7 +219,7 @@ struct MenuContentView: View {
                     Button("Login Items…") { LoginItem.openSettings() }
                 }
                 Spacer()
-                Button("Quit MouseControl") { NSApp.terminate(nil) }
+                Button("Quit Mouse Control") { NSApp.terminate(nil) }
                     .keyboardShortcut("q")
             }
         }

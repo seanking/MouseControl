@@ -1,4 +1,4 @@
-# MouseControl
+# Mouse Control
 
 A native macOS 27 menu-bar app that replaces the parts of Logi Options+ used with an MX Master 3S: mouse-only scroll direction, thumb-wheel direction, DPI, Back/Forward in Safari, thumb button → Mission Control, and battery.
 
@@ -29,7 +29,7 @@ swift test --package-path Packages/MouseControlKit
 
 ## Uninstalling Logi Options+
 
-Logi Options+ has no bundled uninstaller, and moving `logioptionsplus.app` to the Trash leaves its background agent and updater running. Remove it completely before using MouseControl.
+Logi Options+ has no bundled uninstaller, and moving `logioptionsplus.app` to the Trash leaves its background agent and updater running. Remove it completely before using Mouse Control.
 
 1. Quit Logi Options+, then unload and stop its background services:
 

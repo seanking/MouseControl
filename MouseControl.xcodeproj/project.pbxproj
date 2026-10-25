@@ -27,13 +27,13 @@
 		6D2B488FBB8CF5CF4CD70C90 /* DeviceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceController.swift; sourceTree = "<group>"; };
 		818A430773B4ACAE65823B95 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A1C0FFEE0000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1C0FFEE0000000000000010 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		A47611387ABB69A125B33411 /* MouseControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MouseControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D1B9B49A999CE18E44B870 /* MouseControl.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MouseControl.entitlements; sourceTree = "<group>"; };
 		C64DDC69A5F5B0E0F41B7A12 /* Permissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Permissions.swift; sourceTree = "<group>"; };
 		CA92A6CA72CC3837243400BD /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		D2706C501F6DA7528694BFC7 /* EventTapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTapService.swift; sourceTree = "<group>"; };
 		D83F8BEB808ED89E5AF0D7AC /* MouseControlApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseControlApp.swift; sourceTree = "<group>"; };
-		A1C0FFEE0000000000000010 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
