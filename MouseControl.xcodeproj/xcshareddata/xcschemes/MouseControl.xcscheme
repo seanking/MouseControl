@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C1916BE2BD36CEA797257A60"
-               BuildableName = "MouseControl.app"
+               BuildableName = "Mouse Control.app"
                BlueprintName = "MouseControl"
                ReferencedContainer = "container:MouseControl.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C1916BE2BD36CEA797257A60"
-            BuildableName = "MouseControl.app"
+            BuildableName = "Mouse Control.app"
             BlueprintName = "MouseControl"
             ReferencedContainer = "container:MouseControl.xcodeproj">
          </BuildableReference>
@@ -69,7 +69,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C1916BE2BD36CEA797257A60"
-            BuildableName = "MouseControl.app"
+            BuildableName = "Mouse Control.app"
             BlueprintName = "MouseControl"
             ReferencedContainer = "container:MouseControl.xcodeproj">
          </BuildableReference>
@@ -88,7 +88,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C1916BE2BD36CEA797257A60"
-            BuildableName = "MouseControl.app"
+            BuildableName = "Mouse Control.app"
             BlueprintName = "MouseControl"
             ReferencedContainer = "container:MouseControl.xcodeproj">
          </BuildableReference>

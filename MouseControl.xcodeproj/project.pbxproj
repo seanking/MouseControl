@@ -40,7 +40,7 @@
 		818A430773B4ACAE65823B95 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A1C0FFEE0000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1C0FFEE0000000000000010 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
-		A47611387ABB69A125B33411 /* MouseControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MouseControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A47611387ABB69A125B33411 /* Mouse Control.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Mouse Control.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D1B9B49A999CE18E44B870 /* MouseControl.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MouseControl.entitlements; sourceTree = "<group>"; };
 		C64DDC69A5F5B0E0F41B7A12 /* Permissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Permissions.swift; sourceTree = "<group>"; };
 		CA92A6CA72CC3837243400BD /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
@@ -105,7 +105,7 @@
 		C1D2915EBB55FB5BC1E8D9DB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A47611387ABB69A125B33411 /* MouseControl.app */,
+				A47611387ABB69A125B33411 /* Mouse Control.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -138,7 +138,7 @@
 				C2179EA49C3C5E3BD03574E7 /* MouseControlKit */,
 			);
 			productName = MouseControl;
-			productReference = A47611387ABB69A125B33411 /* MouseControl.app */;
+			productReference = A47611387ABB69A125B33411 /* Mouse Control.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -290,7 +290,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.seanking.MouseControl;
-				PRODUCT_NAME = MouseControl;
+				PRODUCT_NAME = "Mouse Control";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -310,7 +310,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.seanking.MouseControl;
-				PRODUCT_NAME = MouseControl;
+				PRODUCT_NAME = "Mouse Control";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
