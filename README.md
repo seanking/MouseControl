@@ -10,7 +10,6 @@ A native macOS 27 menu-bar app that replaces the parts of Logi Options+ used wit
 | `Packages/MouseControlKit/` | HID++ 2.0 framing/matching (`HIDPPChannel`), features, `IOHIDManager` transport. No AppKit dependency, so it can be tested without hardware. |
 | `MouseControl.xcodeproj` | Xcode project (app target, scheme, signing) |
 | `Config/` | `Signing.xcconfig`, which includes the git-ignored `Local.xcconfig` that holds your team ID |
-| `Scripts/release.sh` | Archive → Developer ID sign → notarize → staple |
 
 ## Build & test
 
