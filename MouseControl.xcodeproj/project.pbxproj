@@ -289,8 +289,8 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.seanking.MouseControl;
-				PRODUCT_NAME = "Mouse Control";
+				PRODUCT_BUNDLE_IDENTIFIER = com.seanking.MouseControl.dev;
+				PRODUCT_NAME = "Mouse Control-Dev";
 				SDKROOT = macosx;
 			};
 			name = Debug;

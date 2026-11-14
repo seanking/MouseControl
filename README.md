@@ -48,6 +48,8 @@ xcodebuild -project MouseControl.xcodeproj -scheme MouseControl build
 swift test --package-path Packages/MouseControlKit
 ```
 
+Debug builds are named **Mouse Control-Dev** with the bundle ID `com.seanking.MouseControl.dev`, so macOS keeps their permissions, settings and login item separate from the release app. Grant Input Monitoring and Accessibility to each one.
+
 To make a release, archive in Xcode (Product › Archive) and distribute it from the Organizer with Direct Distribution, which signs and notarizes the app.
 
 ## Project layout
@@ -83,8 +85,10 @@ Each supported kind of mouse is a `MouseDevice` (`LogitechMouse`, `MagicMouse`) 
 ## Debugging
 
 ```bash
-log stream --level debug --predicate 'subsystem == "com.seanking.MouseControl"'
+log stream --level debug --predicate 'subsystem BEGINSWITH "com.seanking.MouseControl"'
 ```
+
+Debug builds log under `com.seanking.MouseControl.dev`, which this predicate also matches.
 
 The `hidpp` category logs every report in both directions at debug level. Use those captures to replace the hand-built fixtures in `Packages/MouseControlKit/Tests/MouseControlKitTests/Fixtures.swift`.
 

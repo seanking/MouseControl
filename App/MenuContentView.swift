@@ -24,6 +24,8 @@ struct MenuContentView: View {
     let controller: DeviceController
 
     private var settings: SettingsStore { controller.settings }
+    /// "Mouse Control", or "Mouse Control-Dev" for Debug builds.
+    private var appName: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Mouse Control" }
     private var logitech: LogitechMouse { controller.logitech }
 
     var body: some View {
@@ -165,7 +167,7 @@ struct MenuContentView: View {
                     Button("Login Items…") { LoginItem.openSettings() }
                 }
                 Spacer()
-                Button("Quit Mouse Control") { NSApp.terminate(nil) }
+                Button("Quit \(appName)") { NSApp.terminate(nil) }
                     .keyboardShortcut("q")
             }
         }
