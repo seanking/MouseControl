@@ -16,6 +16,24 @@ public struct BatteryStatus: Equatable, Sendable {
     public let level: Level
     public let charging: Charging
     public let externalPower: Bool
+
+    public init(percentage: Int, level: Level, charging: Charging, externalPower: Bool) {
+        self.percentage = percentage
+        self.level = level
+        self.charging = charging
+        self.externalPower = externalPower
+    }
+
+    /// For devices that report only a charge percentage.
+    public init(percentage: Int) {
+        let level: Level = switch percentage {
+        case ..<6: .critical
+        case ..<21: .low
+        case ..<100: .good
+        default: .full
+        }
+        self.init(percentage: percentage, level: level, charging: .discharging, externalPower: false)
+    }
 }
 
 /// Unified Battery (0x1004).

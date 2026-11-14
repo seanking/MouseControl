@@ -1,12 +1,12 @@
 # Mouse Control
 
-A native macOS 27 menu-bar app that replaces the parts of Logi Options+ used with an MX Master 3S: mouse-only scroll direction, thumb-wheel direction, DPI, Back/Forward in Safari, a configurable thumb button (Mission Control, App Exposé, Show Desktop, Spotlight, Notification Center, or drag to switch Spaces), and battery.
+A native macOS 27 menu-bar app that replaces the parts of Logi Options+ used with an MX Master 3S: mouse-only scroll direction, thumb-wheel direction, DPI, Back/Forward in Safari, a configurable thumb button (Mission Control, App Exposé, Show Desktop, Spotlight, Notification Center, or drag to switch Spaces), and battery. It also sets the tracking speed while an Apple Magic Mouse is connected.
 
 ## Layout
 
 | Path | What |
 |---|---|
-| `App/` | SwiftUI `MenuBarExtra`, `DeviceController`, `EventTapService`, settings, permissions |
+| `App/` | SwiftUI `MenuBarExtra`, `DeviceController` and the per-device models (`LogitechMouse`, `MagicMouse`), `EventTapService`, settings, permissions |
 | `Packages/MouseControlKit/` | HID++ 2.0 framing/matching (`HIDPPChannel`), features, `IOHIDManager` transport. No AppKit dependency, so it can be tested without hardware. |
 | `MouseControl.xcodeproj` | Xcode project (app target, scheme, signing) |
 | `Config/` | `Signing.xcconfig`, which includes the git-ignored `Local.xcconfig` that holds your team ID |
@@ -84,5 +84,7 @@ The `hidpp` category logs every report in both directions at debug level. Use th
 - **Back/Forward**: event tap turns buttons 3/4 into ⌘[ / ⌘].
 - **Thumb button**: Reprog Controls v4 `0x1B04` diverts the gesture CID after confirming it is in the device's control list and divertable. A press runs the chosen action. Mission Control launches Mission Control.app, with Ctrl+↑ as the fallback. App Exposé (⌃↓), Show Desktop (F11) and Spotlight (⌘Space) post the default system shortcuts, so they only work while those shortcuts are enabled. Notification Center presses the menu bar clock through the Accessibility API. Choosing None leaves the button undiverted.
 - **Drag to switch Spaces**: the gesture button is also diverted with raw XY reporting, so while it's held the mouse sends pointer motion over HID++ instead of moving the cursor. Every ⅛ inch of horizontal drag (scaled by the current DPI) posts ⌃← or ⌃→. The click action then runs on release, and only if the button barely moved.
+- **Per-device menu**: each supported kind of mouse is a `MouseDevice` (`LogitechMouse`, `MagicMouse`) that owns its own discovery and settings. `DeviceController` coordinates them and forwards wake and permission events. The menu shows a section for each connected mouse, with its name, battery, and only the options it supports.
+- **Magic Mouse**: the IORegistry is watched for its pointer collection without opening it, so it needs no permission. Battery comes from the `BatteryPercent` property macOS publishes on its HID event service. When the mouse connects, and after waking from sleep, the chosen tracking speed is applied the same way as `defaults write -g com.apple.mouse.scaling -float 5.0` (persisted) plus `hidutil property --set '{"HIDMouseAcceleration":327680}'` (immediate, 16.16 fixed point). Both are system-wide, so the speed also applies to other mice. The slider goes to 10; System Settings stops at 3.
 - **Battery**: Unified Battery `0x1004`. Read on connect, polled every 5 minutes, and updated from device events.
 - **Reconnect**: every device match, wake from sleep, and Wireless Device Status `0x1D4B` "reconfigure" event triggers a debounced (300 ms) re-discovery and re-apply.

@@ -19,11 +19,11 @@ final class BatteryNotifier {
         let content = UNMutableNotificationContent()
         content.title = "\(deviceName) battery low"
         content.body = "\(status.percentage)% remaining. Charge it soon."
-        let request = UNNotificationRequest(identifier: "low-battery", content: content, trigger: nil)
+        let request = UNNotificationRequest(identifier: "low-battery-\(deviceName)", content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request)
     }
 
-    func requestAuthorization() {
+    static func requestAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 }

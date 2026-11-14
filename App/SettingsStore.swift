@@ -42,6 +42,7 @@ final class SettingsStore {
         static let mouseScrollDirection = "mouseScrollDirection"
         static let thumbWheelInverted = "thumbWheelInverted"
         static let dpi = "dpi"
+        static let magicMouseTrackingSpeed = "magicMouseTrackingSpeed"
         static let backForwardEnabled = "backForwardEnabled"
         /// Legacy on/off flag, read once to migrate into `thumbButtonAction`.
         static let gestureMissionControl = "gestureMissionControl"
@@ -65,6 +66,10 @@ final class SettingsStore {
     /// nil until the user picks a value; the device's own DPI is left alone until then.
     var dpi: Int? {
         didSet { defaults.set(dpi, forKey: Key.dpi) }
+    }
+    /// System tracking speed to apply while a Magic Mouse is connected; nil leaves the system's alone.
+    var magicMouseTrackingSpeed: Double? {
+        didSet { defaults.set(magicMouseTrackingSpeed, forKey: Key.magicMouseTrackingSpeed) }
     }
     var backForwardEnabled: Bool {
         didSet { defaults.set(backForwardEnabled, forKey: Key.backForwardEnabled) }
@@ -107,6 +112,7 @@ final class SettingsStore {
         mouseScrollDirection = ScrollDirection(rawValue: defaults.string(forKey: Key.mouseScrollDirection) ?? "") ?? .standard
         thumbWheelInverted = defaults.bool(forKey: Key.thumbWheelInverted)
         dpi = defaults.object(forKey: Key.dpi) as? Int
+        magicMouseTrackingSpeed = defaults.object(forKey: Key.magicMouseTrackingSpeed) as? Double
         backForwardEnabled = defaults.bool(forKey: Key.backForwardEnabled)
         if let action = defaults.string(forKey: Key.thumbButtonAction).flatMap(ThumbButtonAction.init(rawValue:)) {
             thumbButtonAction = action

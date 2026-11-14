@@ -11,6 +11,12 @@
 		1BECBCAFA99DB7922F5A86DF /* Permissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C64DDC69A5F5B0E0F41B7A12 /* Permissions.swift */; };
 		376366FB102CEDC92D24DC69 /* EventTapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2706C501F6DA7528694BFC7 /* EventTapService.swift */; };
 		901ACB98DB488FF7E64F8142 /* DeviceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B488FBB8CF5CF4CD70C90 /* DeviceController.swift */; };
+		67C4FD29212F3991A7CE7E42 /* MouseDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D267CAC70E81C2596DDD2F4 /* MouseDevice.swift */; };
+		CD58638A415547662FD937F4 /* MenuComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD3609C75BD2112E81807CF /* MenuComponents.swift */; };
+		1C2C3FB31ABA863D73DF5866 /* MagicMouseSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E30D956605B120D72B49DC7 /* MagicMouseSection.swift */; };
+		BB3E1AFD7AFFA285529F5B5F /* MagicMouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344A59901FE2517DA086F58D /* MagicMouse.swift */; };
+		11CBD14ACB03FCBDA0C777EC /* LogitechMouseSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67E435D659EB3D1ABA962148 /* LogitechMouseSection.swift */; };
+		BD985ABD81F52092342EA075 /* LogitechMouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A72F40901C6CC2509163E7 /* LogitechMouse.swift */; };
 		9CF460A972A17179381C7110 /* MenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D216E94C36A3BC4E49C1841 /* MenuContentView.swift */; };
 		A1C0FFEE0000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE0000000000000001 /* Assets.xcassets */; };
 		B8C9ED5B200438EF06DBE82D /* MouseControlKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2179EA49C3C5E3BD03574E7 /* MouseControlKit */; };
@@ -25,6 +31,12 @@
 		211D62B707E3D8B91410D54F /* MouseControlKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MouseControlKit; path = Packages/MouseControlKit; sourceTree = SOURCE_ROOT; };
 		41497D61F896C200AB5136CF /* SystemActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemActions.swift; sourceTree = "<group>"; };
 		6D2B488FBB8CF5CF4CD70C90 /* DeviceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceController.swift; sourceTree = "<group>"; };
+		6D267CAC70E81C2596DDD2F4 /* MouseDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseDevice.swift; sourceTree = "<group>"; };
+		6DD3609C75BD2112E81807CF /* MenuComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuComponents.swift; sourceTree = "<group>"; };
+		1E30D956605B120D72B49DC7 /* MagicMouseSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagicMouseSection.swift; sourceTree = "<group>"; };
+		344A59901FE2517DA086F58D /* MagicMouse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagicMouse.swift; sourceTree = "<group>"; };
+		67E435D659EB3D1ABA962148 /* LogitechMouseSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogitechMouseSection.swift; sourceTree = "<group>"; };
+		36A72F40901C6CC2509163E7 /* LogitechMouse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogitechMouse.swift; sourceTree = "<group>"; };
 		818A430773B4ACAE65823B95 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A1C0FFEE0000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1C0FFEE0000000000000010 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
@@ -54,6 +66,12 @@
 				A1C0FFEE0000000000000001 /* Assets.xcassets */,
 				169BF40ED0280BFC187580AC /* BatteryNotifier.swift */,
 				6D2B488FBB8CF5CF4CD70C90 /* DeviceController.swift */,
+				6D267CAC70E81C2596DDD2F4 /* MouseDevice.swift */,
+				6DD3609C75BD2112E81807CF /* MenuComponents.swift */,
+				1E30D956605B120D72B49DC7 /* MagicMouseSection.swift */,
+				344A59901FE2517DA086F58D /* MagicMouse.swift */,
+				67E435D659EB3D1ABA962148 /* LogitechMouseSection.swift */,
+				36A72F40901C6CC2509163E7 /* LogitechMouse.swift */,
 				D2706C501F6DA7528694BFC7 /* EventTapService.swift */,
 				818A430773B4ACAE65823B95 /* Info.plist */,
 				0D216E94C36A3BC4E49C1841 /* MenuContentView.swift */,
@@ -172,6 +190,12 @@
 			files = (
 				DF100FD0495AE6AC19409983 /* BatteryNotifier.swift in Sources */,
 				901ACB98DB488FF7E64F8142 /* DeviceController.swift in Sources */,
+				67C4FD29212F3991A7CE7E42 /* MouseDevice.swift in Sources */,
+				CD58638A415547662FD937F4 /* MenuComponents.swift in Sources */,
+				1C2C3FB31ABA863D73DF5866 /* MagicMouseSection.swift in Sources */,
+				BB3E1AFD7AFFA285529F5B5F /* MagicMouse.swift in Sources */,
+				11CBD14ACB03FCBDA0C777EC /* LogitechMouseSection.swift in Sources */,
+				BD985ABD81F52092342EA075 /* LogitechMouse.swift in Sources */,
 				376366FB102CEDC92D24DC69 /* EventTapService.swift in Sources */,
 				9CF460A972A17179381C7110 /* MenuContentView.swift in Sources */,
 				C0F855394B24DDB19D8A53C2 /* MouseControlApp.swift in Sources */,

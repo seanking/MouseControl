@@ -48,6 +48,20 @@ public enum SupportedDevices {
         all.first { name.localizedCaseInsensitiveContains($0.name) }
     }
 
+    // MARK: Magic Mouse
+
+    /// Apple's Bluetooth vendor ID; the same mice report the USB vendor ID when connected by cable.
+    public static let appleBluetoothVendorID = 0x004C
+    public static let appleUSBVendorID = 0x05AC
+    /// Magic Mouse (0x030D), Magic Mouse 2 (0x0269), Magic Mouse with USB-C (0x0323).
+    public static let magicMouseProductIDs = [0x030D, 0x0269, 0x0323]
+    public static let magicMouseIDs: [(vendorID: Int, productID: Int)] =
+        [appleBluetoothVendorID, appleUSBVendorID].flatMap { vendor in magicMouseProductIDs.map { (vendor, $0) } }
+
+    /// Generic Desktop › Mouse: the pointer collection, one per physical mouse.
+    public static let genericDesktopUsagePage = 0x01
+    public static let mouseUsage = 0x02
+
     /// Picks the gesture button from the device's control list.
     public static func gestureButton(in controls: [ReprogControlsFeature.Control], profile: DeviceProfile) -> UInt16? {
         for cid in profile.gestureButtonCIDs {

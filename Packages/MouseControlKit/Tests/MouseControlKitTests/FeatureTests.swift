@@ -343,3 +343,36 @@ import Testing
         #expect(SwipeTracker.threshold(inches: 0.25, dpi: nil) == 250)
     }
 }
+
+@Suite struct TrackingSpeedTests {
+    @Test func convertsToHIDFixedPoint() {
+        // Matches `hidutil property --set '{"HIDMouseAcceleration":327680}'` for a speed of 5.0.
+        #expect(TrackingSpeed.fixedPoint(5.0) == 327680)
+        #expect(TrackingSpeed.fixedPoint(0.6875) == 45056)
+        #expect(TrackingSpeed.fixedPoint(0) == 0)
+    }
+
+    @Test func snapsToStepWithinRange() {
+        #expect(TrackingSpeed.snap(5.1) == 5.0)
+        #expect(TrackingSpeed.snap(5.2) == 5.25)
+        #expect(TrackingSpeed.snap(-1) == 0)
+        #expect(TrackingSpeed.snap(42) == 10)
+    }
+
+    @Test func magicMouseIDsCoverBothTransports() {
+        let ids = SupportedDevices.magicMouseIDs
+        #expect(ids.contains { $0 == (0x004C, 0x0269) })
+        #expect(ids.contains { $0 == (0x05AC, 0x0269) })
+        #expect(!ids.contains { $0.vendorID == SupportedDevices.logitechVendorID })
+    }
+}
+
+@Suite struct PercentageBatteryTests {
+    @Test func derivesLevelFromPercentage() {
+        #expect(BatteryStatus(percentage: 3).level == .critical)
+        #expect(BatteryStatus(percentage: 15).level == .low)
+        #expect(BatteryStatus(percentage: 80).level == .good)
+        #expect(BatteryStatus(percentage: 100).level == .full)
+        #expect(BatteryStatus(percentage: 80).charging == .discharging)
+    }
+}

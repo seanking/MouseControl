@@ -8,6 +8,7 @@ public struct HIDDeviceInfo: Sendable, Hashable {
     public let registryID: UInt64
     public let vendorID: Int
     public let productID: Int
+    public let locationID: Int
     public let product: String?
     public let transport: String?
 }
@@ -130,13 +131,7 @@ public final class HIDTransport: @unchecked Sendable {
     // MARK: - Callbacks (transport queue)
 
     private func deviceMatched(_ device: IOHIDDevice) {
-        let info = HIDDeviceInfo(
-            registryID: Self.registryID(of: device),
-            vendorID: Self.intProperty(device, kIOHIDVendorIDKey),
-            productID: Self.intProperty(device, kIOHIDProductIDKey),
-            product: IOHIDDeviceGetProperty(device, kIOHIDProductKey as CFString) as? String,
-            transport: IOHIDDeviceGetProperty(device, kIOHIDTransportKey as CFString) as? String
-        )
+        let info = HIDDeviceInfo(service: IOHIDDeviceGetService(device))
         Log.transport.info("Matched \(info.product ?? "?", privacy: .public) pid=\(String(format: "0x%04X", info.productID), privacy: .public) via \(info.transport ?? "?", privacy: .public)")
 
         let connection = HIDConnection(device: device, info: info)
@@ -155,15 +150,5 @@ public final class HIDTransport: @unchecked Sendable {
     public func setInputHandler(_ handler: @escaping @Sendable ([UInt8]) -> Void, for connection: HIDConnection) {
         dispatchPrecondition(condition: .onQueue(queue))
         connection.inputHandler = handler
-    }
-
-    private static func registryID(of device: IOHIDDevice) -> UInt64 {
-        var id: UInt64 = 0
-        IORegistryEntryGetRegistryEntryID(IOHIDDeviceGetService(device), &id)
-        return id
-    }
-
-    private static func intProperty(_ device: IOHIDDevice, _ key: String) -> Int {
-        (IOHIDDeviceGetProperty(device, key as CFString) as? Int) ?? 0
     }
 }
