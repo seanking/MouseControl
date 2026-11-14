@@ -87,3 +87,7 @@ The `hidpp` category logs every report in both directions at debug level. Use th
 - **Magic Mouse**: the IORegistry is watched for its pointer collection without opening it, so it needs no permission. Battery comes from the `BatteryPercent` property macOS publishes on its HID event service. When the mouse connects, and after waking from sleep, the chosen tracking speed is applied the same way as `defaults write -g com.apple.mouse.scaling -float 5.0` (persisted) plus `hidutil property --set '{"HIDMouseAcceleration":327680}'` (immediate, 16.16 fixed point). Both are system-wide, so the speed also applies to other mice. The slider goes to 10; System Settings stops at 3.
 - **Battery**: Unified Battery `0x1004`. Read on connect, polled every 5 minutes, and updated from device events.
 - **Reconnect**: every device match, wake from sleep, and Wireless Device Status `0x1D4B` "reconfigure" event triggers a debounced (300 ms) re-discovery and re-apply.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
